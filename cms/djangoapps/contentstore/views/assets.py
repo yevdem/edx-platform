@@ -105,6 +105,8 @@ def _assets_json(request, course_key):
         requested_sort = 'uploadDate'
     elif requested_sort == 'display_name':
         requested_sort = 'displayname'
+    elif requested_sort == 'asset_type':
+        requested_sort = 'displayname'
     sort = [(requested_sort, sort_direction)]
 
     current_page = max(requested_page, 0)

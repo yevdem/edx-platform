@@ -16,6 +16,7 @@ define(["jquery", "underscore", "gettext", "js/models/asset", "js/views/paging",
                 this.template = this.loadTemplate("asset-library");
                 this.listenTo(collection, 'destroy', this.handleDestroy);
                 this.registerSortableColumn('js-asset-name-col', gettext('Name'), 'display_name', 'asc');
+                this.registerSortableColumn('js-asset-type-col', gettext('Type'), 'asset_type', 'asc');
                 this.registerSortableColumn('js-asset-date-col', gettext('Date Added'), 'date_added', 'desc');
                 this.setInitialSortColumn('js-asset-date-col');
                 ViewUtils.showLoadingIndicator();
