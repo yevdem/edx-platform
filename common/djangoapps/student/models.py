@@ -77,7 +77,8 @@ class AnonymousUserId(models.Model):
     user = models.ForeignKey(User, db_index=True)
     anonymous_user_id = models.CharField(unique=True, max_length=32)
     course_id = CourseKeyField(db_index=True, max_length=255, blank=True)
-    unique_together = (user, course_id)
+    created = models.DateTimeField(auto_now_add=True, null=True)
+    unique_together = (user, course_id, anonymous_user_id)
 
 
 def anonymous_id_for_user(user, course_id, save=True):
