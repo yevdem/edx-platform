@@ -220,7 +220,7 @@ def create_order(request):
     cart.clear()
     enrollment_mode = current_mode.slug
 
-    import time; time.sleep(30)
+    import time; time.sleep(5)
 
     CertificateItem.add_to_order(cart, course_id, amount, enrollment_mode)
 
