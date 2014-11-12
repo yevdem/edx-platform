@@ -219,6 +219,9 @@ def create_order(request):
     cart = Order.get_cart_for_user(request.user)
     cart.clear()
     enrollment_mode = current_mode.slug
+
+    import time; time.sleep(30)
+
     CertificateItem.add_to_order(cart, course_id, amount, enrollment_mode)
 
     # Change the order's status so that we don't accidentally modify it later.
