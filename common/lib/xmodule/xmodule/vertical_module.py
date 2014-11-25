@@ -13,12 +13,10 @@ from copy import copy
 class_priority = ['video', 'problem']
 
 
-class VerticalFields(object):
-    has_children = True
-
-
-class VerticalModule(VerticalFields, XBlock):
+class VerticalBlock(XBlock):
     ''' Layout module for laying out submodules vertically.'''
+
+    has_children = True
 
     def student_view(self, context):
         fragment = Fragment()
@@ -77,9 +75,9 @@ class VerticalModule(VerticalFields, XBlock):
 
     @property
     def non_editable_metadata_fields(self):
-        non_editable_fields = super(VerticalModule, self).non_editable_metadata_fields
+        non_editable_fields = super(VerticalBlock, self).non_editable_metadata_fields
         non_editable_fields.extend([
-            VerticalModule.due,
+            VerticalBlock.due,
         ])
         return non_editable_fields
 
