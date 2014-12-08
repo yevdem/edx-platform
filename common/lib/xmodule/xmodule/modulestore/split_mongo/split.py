@@ -77,6 +77,7 @@ from xmodule.modulestore import (
 
 from ..exceptions import ItemNotFoundError
 from .caching_descriptor_system import CachingDescriptorSystem
+from xmodule.modulestore.courseware_index import ModuleStoreCoursewareIndexMixin
 from xmodule.modulestore.split_mongo.mongo_connection import MongoConnection, DuplicateKeyError
 from xmodule.modulestore.split_mongo import BlockKey, CourseEnvelope, BlockData
 from xmodule.error_module import ErrorDescriptor
@@ -590,7 +591,7 @@ class SplitBulkWriteMixin(BulkOperationsMixin):
         return structures
 
 
-class SplitMongoModuleStore(SplitBulkWriteMixin, ModuleStoreWriteBase):
+class SplitMongoModuleStore(SplitBulkWriteMixin, ModuleStoreWriteBase, ModuleStoreCoursewareIndexMixin):
     """
     A Mongodb backed ModuleStore supporting versions, inheritance,
     and sharing.
