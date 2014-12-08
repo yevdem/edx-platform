@@ -120,6 +120,11 @@ FEATURES['ENTRANCE_EXAMS'] = True
 # Whether to run django-require in debug mode.
 REQUIRE_DEBUG = DEBUG
 
+########################## Courseware Search #######################
+FEATURES['ENABLE_COURSEWARE_SEARCH'] = True
+SEARCH_ENGINE = "search.elastic.ElasticSearchEngine"
+
+
 #####################################################################
 # See if the developer has any local overrides.
 try:
