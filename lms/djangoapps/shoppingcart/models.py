@@ -1267,7 +1267,7 @@ class CertificateItem(OrderItem):
     @property
     def single_item_receipt_context(self):
         course = modulestore().get_course(self.course_id)
-        return {
+        context = {
             "course_id": self.course_id,
             "course_name": course.display_name_with_default,
             "course_org": course.display_org_with_default,
@@ -1280,6 +1280,15 @@ class CertificateItem(OrderItem):
             ),
             "dashboard_url": reverse('dashboard'),
         }
+
+        # If this is a verified cert, check the status for this particular order item.
+        if self.mode in ('verified', 'professional'):
+            from student.helpers import check_verify_status_for_course
+            verified_status = check_verify_status_for_course(
+                self.user, self.course_id, self.course_enrollment, [self.mode]
+            )
+            context['verified_status'] = verified_status[course.id]
+        return context
 
     @property
     def additional_instruction_text(self):

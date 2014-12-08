@@ -167,65 +167,75 @@ def check_verify_status_by_course(user, course_enrollment_pairs, all_course_mode
     verifications = SoftwareSecurePhotoVerification.objects.filter(user=user)
 
     for course, enrollment in course_enrollment_pairs:
-
-        # Get the verified mode (if any) for this course
-        # We pass in the course modes we have already loaded to avoid
-        # another database hit, as well as to ensure that expired
-        # course modes are included in the search.
-        verified_mode = CourseMode.verified_mode_for_course(
-            course.id,
-            modes=all_course_modes[course.id]
+        status_by_course[course.id] = check_verify_status_for_course(
+            course.id, enrollment, all_course_modes[course.id], verifications=verifications
         )
 
-        # If no verified mode has ever been offered, or the user hasn't enrolled
-        # as verified, then the course won't display state related to its
-        # verification status.
-        if verified_mode is not None and enrollment.mode in CourseMode.VERIFIED_MODES:
-            deadline = verified_mode.expiration_datetime
-            relevant_verification = SoftwareSecurePhotoVerification.verification_for_datetime(deadline, verifications)
-
-            # By default, don't show any status related to verification
-            status = None
-
-            # Check whether the user was approved or is awaiting approval
-            if relevant_verification is not None:
-                if relevant_verification.status == "approved":
-                    status = VERIFY_STATUS_APPROVED
-                elif relevant_verification.status == "submitted":
-                    status = VERIFY_STATUS_SUBMITTED
-
-            # If the user didn't submit at all, then tell them they need to verify
-            # If the deadline has already passed, then tell them they missed it.
-            # If they submitted but something went wrong (error or denied),
-            # then don't show any messaging next to the course, since we already
-            # show messages related to this on the left sidebar.
-            submitted = (
-                relevant_verification is not None and
-                relevant_verification.status not in ["created", "ready"]
-            )
-            if status is None and not submitted:
-                if deadline is None or deadline > datetime.now(UTC):
-                    status = VERIFY_STATUS_NEED_TO_VERIFY
-                else:
-                    status = VERIFY_STATUS_MISSED_DEADLINE
-
-            # Set the status for the course only if we're displaying some kind of message
-            # Otherwise, leave the course out of the dictionary.
-            if status is not None:
-                days_until_deadline = None
-                verification_good_until = None
-
-                now = datetime.now(UTC)
-                if deadline is not None and deadline > now:
-                    days_until_deadline = (deadline - now).days
-
-                if relevant_verification is not None:
-                    verification_good_until = relevant_verification.expiration_datetime.strftime("%m/%d/%Y")
-
-                status_by_course[course.id] = {
-                    'status': status,
-                    'days_until_deadline': days_until_deadline,
-                    'verification_good_until': verification_good_until
-                }
-
     return status_by_course
+
+
+def check_verify_status_for_course(course_id, enrollment, course_modes, verifications=None, user=None):
+    # Retrieve all verifications for the user, sorted in descending
+    # order by submission datetime
+    if verifications is None and user is not None:
+        verifications = SoftwareSecurePhotoVerification.objects.filter(user=user)
+
+    # Get the verified mode (if any) for this course
+    # We pass in the course modes we have already loaded to avoid
+    # another database hit, as well as to ensure that expired
+    # course modes are included in the search.
+    verified_mode = CourseMode.verified_mode_for_course(
+        course_id,
+        modes=course_modes
+    )
+
+    # If no verified mode has ever been offered, or the user hasn't enrolled
+    # as verified, then the course won't display state related to its
+    # verification status.
+    if verified_mode is not None and enrollment.mode in CourseMode.VERIFIED_MODES:
+        deadline = verified_mode.expiration_datetime
+        relevant_verification = SoftwareSecurePhotoVerification.verification_for_datetime(deadline, verifications)
+
+        # By default, don't show any status related to verification
+        status = None
+
+        # Check whether the user was approved or is awaiting approval
+        if relevant_verification is not None:
+            if relevant_verification.status == "approved":
+                status = VERIFY_STATUS_APPROVED
+            elif relevant_verification.status == "submitted":
+                status = VERIFY_STATUS_SUBMITTED
+
+        # If the user didn't submit at all, then tell them they need to verify
+        # If the deadline has already passed, then tell them they missed it.
+        # If they submitted but something went wrong (error or denied),
+        # then don't show any messaging next to the course, since we already
+        # show messages related to this on the left sidebar.
+        submitted = (
+            relevant_verification is not None and
+            relevant_verification.status not in ["created", "ready"]
+        )
+        if status is None and not submitted:
+            if deadline is None or deadline > datetime.now(UTC):
+                status = VERIFY_STATUS_NEED_TO_VERIFY
+            else:
+                status = VERIFY_STATUS_MISSED_DEADLINE
+
+        # Set the status for the course only if we're displaying some kind of message
+        # Otherwise, leave the course out of the dictionary.
+        if status is not None:
+            days_until_deadline = None
+            verification_good_until = None
+
+            now = datetime.now(UTC)
+            if deadline is not None and deadline > now:
+                days_until_deadline = (deadline - now).days
+
+            if relevant_verification is not None:
+                verification_good_until = relevant_verification.expiration_datetime.strftime("%m/%d/%Y")
+
+            return {
+                'status': status,
+                'days_until_deadline': days_until_deadline,
+                'verification_good_until': verification_good_until
+            }
