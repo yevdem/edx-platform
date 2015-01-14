@@ -144,4 +144,4 @@ analytics-python==0.4.4
 git+https://github.com/mfogel/django-settings-context-processor.git
 
 # edX packages
-edx-submissions==0.0.8
+git+https://github.com/edx/edx-submissions.git@7d19adcc49045b225aa55441604928905b018b30#egg=edx-submissions
