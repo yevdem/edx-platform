@@ -533,6 +533,9 @@ class XModuleMixin(XBlockMixin):
         self.xmodule_runtime = xmodule_runtime
         self._field_data = field_data
 
+        if hasattr(self, '_child_instances'):
+            delattr(self, '_child_instances')
+
 
 class ProxyAttribute(object):
     """
@@ -1568,7 +1571,8 @@ class ModuleSystem(MetricsMixin, ConfigurableFragmentWrapper, Runtime):  # pylin
         return self.handler_url(self.xmodule_instance, 'xmodule_handler', '', '').rstrip('/?')
 
     def get_block(self, block_id):
-        return self.get_module(self.descriptor_runtime.get_block(block_id))
+        block = self.descriptor_runtime.get_block(block_id)
+        return self.get_module(block) if block else None
 
     def resource_url(self, resource):
         raise NotImplementedError("edX Platform doesn't currently implement XBlock resource urls")
