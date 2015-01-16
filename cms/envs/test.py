@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 This config file runs the simplest dev environment using sqlite, and db-based
 sessions. Assumes structure:
@@ -232,16 +231,5 @@ FEATURES['ENABLE_DISCUSSION_SERVICE'] = False
 
 # Enable content libraries code for the tests
 FEATURES['ENABLE_CONTENT_LIBRARIES'] = True
+
 FEATURES['ENABLE_EDXNOTES'] = True
-VIDEO_CDN_URL = {
-    'CN': 'http://api.xuetangx.com/edx/video?s3_url='
-}
-VIDEO_CDN_INFO = {
-    'CN': {
-        'BRANDING': {
-            'url': 'http://www.xuetangx.com',
-            'logo_src': 'http://www.xuetangx.com/static/images/logo.png',
-            'logo_tag': _('Video hosted by XuetangX.com'),
-        },
-    },
-}
