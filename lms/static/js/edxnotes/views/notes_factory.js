@@ -3,9 +3,9 @@
 define([
      'jquery', 'underscore', 'annotator', 'js/edxnotes/utils/logger',
      'js/edxnotes/views/shim', 'js/edxnotes/plugins/scroller',
-     'js/edxnotes/plugins/events'
+     'js/edxnotes/plugins/events', 'js/edxnotes/plugins/caret_navigation'
 ], function ($, _, Annotator, NotesLogger) {
-    var plugins = ['Auth', 'Store', 'Scroller', 'Events'],
+    var plugins = ['Auth', 'Store', 'Scroller', 'Events', 'CaretNavigation'],
         getOptions, setupPlugins, updateHeaders, getAnnotator;
 
     /**
