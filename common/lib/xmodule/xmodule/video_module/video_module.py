@@ -627,7 +627,7 @@ class VideoDescriptor(VideoFields, VideoTranscriptsMixin, VideoStudioViewHandler
         if self.sub:
             _update_transcript_for_index()
 
-        #check to see if there are transcripts in other languages besides default transcript
+        # check to see if there are transcripts in other languages besides default transcript
         if self.transcripts:
             for language in self.transcripts.keys():
                 _update_transcript_for_index(language)
@@ -635,8 +635,7 @@ class VideoDescriptor(VideoFields, VideoTranscriptsMixin, VideoStudioViewHandler
         if "content" in xblock_body:
             xblock_body["content"].update(video_body)
         else:
-            xblock_body.update({"content": video_body})
-        xblock_body.update({
-            "content_type": "Video"
-        })
+            xblock_body["content"] = video_body
+        xblock_body.update["content_type"] = "Video"
+
         return xblock_body
