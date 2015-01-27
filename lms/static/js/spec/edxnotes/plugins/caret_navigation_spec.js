@@ -88,10 +88,13 @@ define([
 
                 spyOn($.fn, 'position').andReturn(this.mockOffset);
                 spyOn(this.annotator, 'createAnnotation').andReturn(this.annotation);
-                spyOn(this.annotator, 'setupAnnotation').andReturn(this.annotation)
+                spyOn(this.annotator, 'setupAnnotation').andReturn(this.annotation);
+                spyOn(this.annotator, 'getSelectedRanges').andReturn([{}]);
                 spyOn(this.annotator, 'deleteAnnotation');
-                spyOn(this.annotator, 'getSelectedRanges').andReturn([{}])
                 spyOn(this.annotator, 'showEditor');
+                spyOn(Annotator.Util, 'readRangeViaSelection');
+                spyOn(this.plugin, 'saveSelection');
+                spyOn(this.plugin, 'restoreSelection');
             });
 
             it('should create a new annotation', function () {
@@ -153,11 +156,28 @@ define([
             it('should call Annotator#deleteAnnotation if editing is cancelled', function () {
                 triggerEvent(this.element);
                 this.annotator.onEditorHide();
-                this.annotator.onEditorSubmit();
                 expect(this.mockSubscriber).not.toHaveBeenCalledWith('annotationCreated');
                 expect(this.annotator.deleteAnnotation).toHaveBeenCalledWith(
                     this.annotation
                 );
+            });
+
+            it('should restore selection if editing is cancelled', function () {
+                triggerEvent(this.element);
+                this.plugin.savedRange = 'range';
+                expect(this.plugin.saveSelection).toHaveBeenCalled();
+                this.annotator.onEditorHide();
+                expect(this.plugin.restoreSelection).toHaveBeenCalled();
+            });
+
+            it('should do nothing if the edit\'s saved', function () {
+                triggerEvent(this.element);
+                expect(this.plugin.saveSelection).toHaveBeenCalled();
+                this.plugin.savedRange = 'range';
+                this.annotator.onEditorSubmit();
+                expect(Annotator.Util.readRangeViaSelection).not.toHaveBeenCalled();
+                expect(this.plugin.savedRange).toBeNull();
+                expect(this.plugin.restoreSelection).not.toHaveBeenCalled();
             });
 
             it('should do nothing if it is not a shortcut', function () {

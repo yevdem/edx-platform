@@ -31,8 +31,23 @@ define(['jquery', 'underscore', 'annotator'], function ($, _, Annotator) {
             return (ranges || []).length;
         },
 
+        saveSelection: function () {
+            this.savedRange = Annotator.Util.getGlobal().getSelection().getRangeAt(0);
+        },
+
+        restoreSelection: function () {
+            if (this.savedRange) {
+                var browserRange = new Annotator.Range.BrowserRange(this.savedRange),
+                    normedRange = browserRange.normalize().limit(this.annotator.wrapper[0]);
+
+                Annotator.Util.readRangeViaSelection(normedRange);
+                this.savedRange = null;
+            }
+        },
+
         onKeyUp: function (event) {
             var annotator = this.annotator,
+                self = this,
                 isAnnotator, annotation, highlights, position, save, cancel, cleanup;
 
             // Do nothing if not a shortcut.
@@ -77,6 +92,7 @@ define(['jquery', 'underscore', 'annotator'], function ($, _, Annotator) {
 
             // Remove the highlights if the edit is cancelled
             cancel = function () {
+                self.restoreSelection();
                 cleanup();
                 annotator.deleteAnnotation(annotation);
             };
@@ -85,11 +101,13 @@ define(['jquery', 'underscore', 'annotator'], function ($, _, Annotator) {
             cleanup = function () {
                 annotator.unsubscribe('annotationEditorHidden', cancel);
                 annotator.unsubscribe('annotationEditorSubmit', save);
+                self.savedRange = null;
             };
 
             annotator.subscribe('annotationEditorHidden', cancel);
             annotator.subscribe('annotationEditorSubmit', save);
 
+            this.saveSelection();
             // Display the editor.
             annotator.showEditor(annotation, position);
             event.preventDefault();
