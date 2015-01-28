@@ -5,7 +5,7 @@ define([
     'underscore',
     'backbone',
     'gettext',
-    'js/search/views/SearchItemView'
+    'js/search/views/search_item_view'
 ], function ($, _, Backbone, gettext, SearchItemView) {
 
    'use strict';

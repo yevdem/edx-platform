@@ -1,7 +1,7 @@
 RequireJS.require([
     'jquery',
     'backbone',
-    'js/search/SearchApp'
+    'js/search/search_app'
 ], function ($, Backbone, SearchApp) {
     'use strict';
 
