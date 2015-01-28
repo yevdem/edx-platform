@@ -2,7 +2,7 @@
 
 define([
     'backbone',
-    'js/search/models/SearchResult'
+    'js/search/models/search_result'
 ], function (Backbone, SearchResult) {
     'use strict';
 

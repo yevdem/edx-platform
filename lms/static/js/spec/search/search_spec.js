@@ -3,13 +3,13 @@ define([
     'sinon',
     'backbone',
     'js/common_helpers/template_helpers',
-    'js/search/views/SearchForm',
-    'js/search/views/SearchItemView',
-    'js/search/views/SearchListView',
-    'js/search/models/SearchResult',
-    'js/search/collections/SearchCollection',
-    'js/search/SearchRouter',
-    'js/search/SearchApp'
+    'js/search/views/search_form',
+    'js/search/views/search_item_view',
+    'js/search/views/search_list_view',
+    'js/search/models/search_result',
+    'js/search/collections/search_collection',
+    'js/search/search_router',
+    'js/search/search_app'
 ], function(
     $,
     Sinon,
