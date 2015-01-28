@@ -2,10 +2,10 @@
 
 define([
     'backbone',
-    'js/search/SearchRouter',
-    'js/search/views/SearchForm',
-    'js/search/views/SearchListView',
-    'js/search/collections/SearchCollection'
+    'js/search/search_router',
+    'js/search/views/search_form',
+    'js/search/views/search_list_view',
+    'js/search/collections/search_collection'
 ], function(Backbone, SearchRouter, SearchForm, SearchListView, SearchCollection) {
     'use strict';
 
