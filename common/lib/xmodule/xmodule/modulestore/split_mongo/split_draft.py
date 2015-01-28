@@ -5,6 +5,7 @@ Module for the dual-branch fall-back Draft->Published Versioning ModuleStore
 from xmodule.modulestore.split_mongo.split import SplitMongoModuleStore, EXCLUDE_ALL
 from xmodule.exceptions import InvalidVersionError
 from xmodule.modulestore import ModuleStoreEnum
+from xmodule.modulestore.courseware_index import CoursewareSearchIndexer
 from xmodule.modulestore.exceptions import InsufficientSpecificationError, ItemNotFoundError
 from xmodule.modulestore.draft_and_published import (
     ModuleStoreDraftAndPublished, DIRECT_ONLY_CATEGORIES, UnsupportedRevisionError
@@ -205,7 +206,7 @@ class DraftVersioningModuleStore(SplitMongoModuleStore, ModuleStoreDraftAndPubli
 
         # Remove this location from the courseware search index so that searches
         # will refrain from showing it as a result
-        self.add_to_search_index(location, delete=True)
+        CoursewareSearchIndexer.add_to_search_index(self, location, delete=True)
 
     def _map_revision_to_branch(self, key, revision=None):
         """
@@ -351,7 +352,7 @@ class DraftVersioningModuleStore(SplitMongoModuleStore, ModuleStoreDraftAndPubli
         )
 
         # Now it's been published, add the object to the courseware search index so that it appears in search results
-        self.add_to_search_index(location)
+        CoursewareSearchIndexer.add_to_search_index(self, location)
 
         return self.get_item(location.for_branch(ModuleStoreEnum.BranchName.published), **kwargs)
 
