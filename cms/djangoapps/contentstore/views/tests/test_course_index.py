@@ -453,7 +453,7 @@ class TestCourseReIndex(CourseTestCase):
             course_id=unicode(self.course.id))
         self.assertEqual(response['results'], [])
 
-        #set mocked exception response
+        # set mocked exception response
         err = Exception
         mock_index_dictionary.return_value = err
 
@@ -475,7 +475,7 @@ class TestCourseReIndex(CourseTestCase):
             course_id=unicode(self.course.id))
         self.assertEqual(response['results'], [])
 
-        #set mocked exception response
+        # set mocked exception response
         err = Exception
         mock_index_dictionary.return_value = err
 
@@ -497,7 +497,7 @@ class TestCourseReIndex(CourseTestCase):
             course_id=unicode(self.course.id))
         self.assertEqual(response['results'], [])
 
-        #set mocked exception response
+        # set mocked exception response
         err = Exception
         mock_index_dictionary.return_value = err
 
@@ -510,7 +510,7 @@ class TestCourseReIndex(CourseTestCase):
         """
         Test system logs an error if no item found.
         """
-        #set mocked exception response
+        # set mocked exception response
         err = ItemNotFoundError
         mock_get_course.return_value = err
 
@@ -524,9 +524,9 @@ class TestCourseReIndex(CourseTestCase):
         with self.assertRaises(PermissionDenied):
             reindex_course_and_check_access(self.course.id, user2)
 
-    def test_doindex_responses(self):
+    def test_indexing_responses(self):
         """
-        Test do_index response with real data
+        Test add_to_search_index response with real data
         """
         # Check results not indexed
         response = perform_search(
@@ -558,9 +558,9 @@ class TestCourseReIndex(CourseTestCase):
         self.assertEqual(response['total'], 1)
 
     @mock.patch('xmodule.video_module.VideoDescriptor.index_dictionary')
-    def test_doindex_video_error_responses(self, mock_index_dictionary):
+    def test_indexing_video_error_responses(self, mock_index_dictionary):
         """
-        Test do_index response with mocked error data for video
+        Test add_to_search_index response with mocked error data for video
         """
         # Check results not indexed
         response = perform_search(
@@ -571,7 +571,7 @@ class TestCourseReIndex(CourseTestCase):
             course_id=unicode(self.course.id))
         self.assertEqual(response['results'], [])
 
-        #set mocked exception response
+        # set mocked exception response
         err = Exception
         mock_index_dictionary.return_value = err
 
@@ -580,9 +580,9 @@ class TestCourseReIndex(CourseTestCase):
             modulestore().do_course_reindex(self.course.id)
 
     @mock.patch('xmodule.html_module.HtmlDescriptor.index_dictionary')
-    def test_doindex_html_error_responses(self, mock_index_dictionary):
+    def test_indexing_html_error_responses(self, mock_index_dictionary):
         """
-        Test do_index response with mocked error data for html
+        Test add_to_search_index response with mocked error data for html
         """
         # Check results not indexed
         response = perform_search(
@@ -593,7 +593,7 @@ class TestCourseReIndex(CourseTestCase):
             course_id=unicode(self.course.id))
         self.assertEqual(response['results'], [])
 
-        #set mocked exception response
+        # set mocked exception response
         err = Exception
         mock_index_dictionary.return_value = err
 
@@ -602,9 +602,9 @@ class TestCourseReIndex(CourseTestCase):
             modulestore().do_course_reindex(self.course.id)
 
     @mock.patch('xmodule.seq_module.SequenceDescriptor.index_dictionary')
-    def test_doindex_seq_error_responses(self, mock_index_dictionary):
+    def test_indexing_seq_error_responses(self, mock_index_dictionary):
         """
-        Test do_index response with mocked error data for sequence
+        Test add_to_search_index response with mocked error data for sequence
         """
         # Check results not indexed
         response = perform_search(
@@ -615,7 +615,7 @@ class TestCourseReIndex(CourseTestCase):
             course_id=unicode(self.course.id))
         self.assertEqual(response['results'], [])
 
-        #set mocked exception response
+        # set mocked exception response
         err = Exception
         mock_index_dictionary.return_value = err
 
@@ -624,11 +624,11 @@ class TestCourseReIndex(CourseTestCase):
             modulestore().do_course_reindex(self.course.id)
 
     @mock.patch('xmodule.modulestore.mongo.base.MongoModuleStore.get_course')
-    def test_doindex_no_item(self, mock_get_course):
+    def test_indexing_no_item(self, mock_get_course):
         """
         Test system logs an error if no item found.
         """
-        #set mocked exception response
+        # set mocked exception response
         err = ItemNotFoundError
         mock_get_course.return_value = err
 

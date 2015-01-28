@@ -118,7 +118,7 @@ define(["jquery", "underscore", "gettext", "js/views/pages/base_page", "js/views
             startReIndex: function() {
                 var locator =  window.course.id;
                 return $.ajax({
-                    url: '/course_index/' + locator,
+                    url: '/course_search_index/' + locator,
                     method: 'GET'
                     });
             },
