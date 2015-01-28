@@ -345,7 +345,7 @@ def register_code_redemption(request, registration_code):
             'reg_code': registration_code,
             'site_name': site_name,
             'course': course,
-            'registered_for_course': registered_for_course(course, request.user)
+            'registered_for_course': not _enrollment_is_upgradeable_with_code(course, request.user, course_registration)
         }
         return render_to_response(template_to_render, context)
     elif request.method == "POST":
@@ -381,7 +381,18 @@ def register_code_redemption(request, registration_code):
                         kwargs['mode'] = course_registration.mode_slug
                     else:
                         raise RedemptionCodeError()
-                redemption.course_enrollment = CourseEnrollment.enroll(request.user, course.id, **kwargs)
+                # If the user already has an enrollment for this course, update the enrollment rather than
+                # creating a new one.
+                try:
+                    enrollment = CourseEnrollment.objects.get(user=request.user, course_id=course.id)
+                except CourseEnrollment.DoesNotExist:
+                    enrollment = None
+                if enrollment:
+                    kwargs['is_active'] = True
+                    enrollment.update_enrollment(**kwargs)
+                    redemption.course_enrollment = enrollment
+                else:
+                    redemption.course_enrollment = CourseEnrollment.enroll(request.user, course.id, **kwargs)
                 redemption.save()
                 context['redemption_success'] = True
             except RedemptionCodeError:
@@ -399,6 +410,26 @@ def register_code_redemption(request, registration_code):
         else:
             context['redemption_success'] = False
         return render_to_response(template_to_render, context)
+
+
+def _enrollment_is_upgradeable_with_code(course, user, redemption_code):
+    """Checks to see if the user's enrollment can be updated by the code.
+
+    Check to see if the enrollment code and the user's enrollment match. If they are different, the code
+    may be used to alter the enrollment of the user. If the user is inactive, will return True, since
+    the user may use the code to re-activate an enrollment as well.
+
+    Args:
+        course (CourseDescriptor): The course to check for enrollment.
+        user (User): The user that will be using the redemption code.
+        redemption_code (CourseRegistrationCode): The redemption code that will be used to update the user's enrollment.
+
+    Returns:
+        True if the redemption code can be used to upgrade the enrollment, or re-activate it.
+
+    """
+    enrollment_mode, is_active = CourseEnrollment.enrollment_mode_for_user(user, course.id)
+    return not is_active or enrollment_mode != redemption_code.mode_slug
 
 
 def use_registration_code(course_reg, user):
