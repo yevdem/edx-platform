@@ -205,7 +205,7 @@ class DraftVersioningModuleStore(SplitMongoModuleStore, ModuleStoreDraftAndPubli
 
         # Remove this location from the courseware search index so that searches
         # will refrain from showing it as a result
-        self.do_index(location, delete=True)
+        self.add_to_search_index(location, delete=True)
 
     def _map_revision_to_branch(self, key, revision=None):
         """
@@ -351,7 +351,7 @@ class DraftVersioningModuleStore(SplitMongoModuleStore, ModuleStoreDraftAndPubli
         )
 
         # Now it's been published, add the object to the courseware search index so that it appears in search results
-        self.do_index(location)
+        self.add_to_search_index(location)
 
         return self.get_item(location.for_branch(ModuleStoreEnum.BranchName.published), **kwargs)
 
