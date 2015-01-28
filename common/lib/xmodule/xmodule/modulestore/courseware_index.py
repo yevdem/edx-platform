@@ -30,7 +30,7 @@ class ModuleStoreCoursewareIndexMixin(object):
     Mixin class to enable indexing for courseware search from different modulestores
     """
 
-    def do_index(self, location, delete=False):
+    def add_to_search_index(self, location, delete=False, raise_on_error=False):
         """
         Add to courseware search index from given location and its children
         """
@@ -123,11 +123,11 @@ class ModuleStoreCoursewareIndexMixin(object):
             )
             error_list.append(_('General indexing error occurred'))
 
-        if error_list:
+        if raise_on_error and error_list:
             raise SearchIndexingError(_('Error(s) present during indexing'), error_list)
 
     def do_course_reindex(self, course_key):
         """
         (Re)index all content within the given course
         """
-        return self.do_index(course_key, delete=False)
+        return self.add_to_search_index(course_key, delete=False, raise_on_error=True)

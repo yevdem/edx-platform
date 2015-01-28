@@ -924,12 +924,12 @@ class MixedModuleStore(ModuleStoreDraftAndPublished, ModuleStoreWriteBase):
         for store in self.modulestores:
             store.ensure_indexes()
 
-    def do_index(self, location, delete=False):
+    def add_to_search_index(self, location, delete=False):
         """
         Add to courseware search index from given location and its children
         """
         store = self._verify_modulestore_support(location.course_key, 'has_changes')
-        return store.do_index(location, delete)
+        return store.add_to_search_index(location, delete)
 
     def do_course_reindex(self, course_key):
         """

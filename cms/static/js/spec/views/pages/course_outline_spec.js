@@ -330,7 +330,7 @@ define(["jquery", "js/common_helpers/ajax_helpers", "js/views/utils/view_utils",
                     var successSpy = spyOn(outlinePage, 'onIndexSuccess').andCallThrough();
                     var reindexButton = outlinePage.$('.button.button-reindex');
                     reindexButton.trigger('click');
-                    AjaxHelpers.expectJsonRequest(requests, 'GET', '/course_index/5');
+                    AjaxHelpers.expectJsonRequest(requests, 'GET', '/course_search_index/5');
                     AjaxHelpers.respondWithJson(requests, createMockIndexJSON(true));
                     expect(reindexSpy).toHaveBeenCalled();
                     expect(successSpy).toHaveBeenCalled();
@@ -341,7 +341,7 @@ define(["jquery", "js/common_helpers/ajax_helpers", "js/views/utils/view_utils",
                     var reindexSpy = spyOn(outlinePage, 'startReIndex').andCallThrough();
                     var reindexButton = outlinePage.$('.button.button-reindex');
                     reindexButton.trigger('click');
-                    AjaxHelpers.expectJsonRequest(requests, 'GET', '/course_index/5');
+                    AjaxHelpers.expectJsonRequest(requests, 'GET', '/course_search_index/5');
                     AjaxHelpers.respondWithJson(requests, createMockIndexJSON(false));
                     expect(reindexSpy).toHaveBeenCalled();
                 });

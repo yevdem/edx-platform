@@ -544,7 +544,7 @@ class DraftModuleStore(MongoModuleStore):
 
         # Remove this location from the courseware search index so that searches
         # will refrain from showing it as a result
-        self.do_index(location, delete=True)
+        self.add_to_search_index(location, delete=True)
 
     def _delete_subtree(self, location, as_functions, draft_only=False):
         """
@@ -720,7 +720,7 @@ class DraftModuleStore(MongoModuleStore):
             self.collection.remove({'_id': {'$in': to_be_deleted}})
 
         # Now it's been published, add the object to the courseware search index so that it appears in search results
-        self.do_index(location)
+        self.add_to_search_index(location)
 
         return self.get_item(as_published(location))
 
