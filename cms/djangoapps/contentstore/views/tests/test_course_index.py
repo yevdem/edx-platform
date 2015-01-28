@@ -15,6 +15,7 @@ from contentstore.views.item import create_xblock_info, VisibilityState
 from course_action_state.models import CourseRerunState
 from util.date_utils import get_default_time_display
 from xmodule.modulestore import ModuleStoreEnum
+from xmodule.modulestore.courseware_index import CoursewareSearchIndexer
 from xmodule.modulestore.exceptions import ItemNotFoundError
 from xmodule.modulestore.django import modulestore
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory, LibraryFactory
@@ -538,14 +539,14 @@ class TestCourseReIndex(CourseTestCase):
         self.assertEqual(response['results'], [])
 
         # Start manual reindex
-        errors = modulestore().do_course_reindex(self.course.id)
+        errors = CoursewareSearchIndexer.do_course_reindex(modulestore(), self.course.id)
         self.assertEqual(errors, None)
 
         self.html.display_name = "My expanded HTML"
         modulestore().update_item(self.html, ModuleStoreEnum.UserID.test)
 
         # Start manual reindex
-        errors = modulestore().do_course_reindex(self.course.id)
+        errors = CoursewareSearchIndexer.do_course_reindex(modulestore(), self.course.id)
         self.assertEqual(errors, None)
 
         # Check results indexed now
@@ -577,7 +578,7 @@ class TestCourseReIndex(CourseTestCase):
 
         # Start manual reindex and check error in response
         with self.assertRaises(SearchIndexingError):
-            modulestore().do_course_reindex(self.course.id)
+            CoursewareSearchIndexer.do_course_reindex(modulestore(), self.course.id)
 
     @mock.patch('xmodule.html_module.HtmlDescriptor.index_dictionary')
     def test_indexing_html_error_responses(self, mock_index_dictionary):
@@ -599,7 +600,7 @@ class TestCourseReIndex(CourseTestCase):
 
         # Start manual reindex and check error in response
         with self.assertRaises(SearchIndexingError):
-            modulestore().do_course_reindex(self.course.id)
+            CoursewareSearchIndexer.do_course_reindex(modulestore(), self.course.id)
 
     @mock.patch('xmodule.seq_module.SequenceDescriptor.index_dictionary')
     def test_indexing_seq_error_responses(self, mock_index_dictionary):
@@ -621,7 +622,7 @@ class TestCourseReIndex(CourseTestCase):
 
         # Start manual reindex and check error in response
         with self.assertRaises(SearchIndexingError):
-            modulestore().do_course_reindex(self.course.id)
+            CoursewareSearchIndexer.do_course_reindex(modulestore(), self.course.id)
 
     @mock.patch('xmodule.modulestore.mongo.base.MongoModuleStore.get_course')
     def test_indexing_no_item(self, mock_get_course):
@@ -634,7 +635,7 @@ class TestCourseReIndex(CourseTestCase):
 
         # Start manual reindex and check error in response
         with self.assertRaises(SearchIndexingError):
-            modulestore().do_course_reindex(self.course.id)
+            CoursewareSearchIndexer.do_course_reindex(modulestore(), self.course.id)
 
     def tearDown(self):
         os.remove(self.TEST_INDEX_FILENAME)

@@ -44,7 +44,6 @@ from xmodule.errortracker import null_error_tracker, exc_info_to_str
 from xmodule.exceptions import HeartbeatFailure
 from xmodule.mako_module import MakoDescriptorSystem
 from xmodule.modulestore import ModuleStoreWriteBase, ModuleStoreEnum, BulkOperationsMixin, BulkOpsRecord
-from xmodule.modulestore.courseware_index import ModuleStoreCoursewareIndexMixin
 from xmodule.modulestore.draft_and_published import ModuleStoreDraftAndPublished, DIRECT_ONLY_CATEGORIES
 from xmodule.modulestore.edit_info import EditInfoRuntimeMixin
 from xmodule.modulestore.exceptions import ItemNotFoundError, DuplicateCourseError, ReferentialIntegrityError
@@ -488,10 +487,7 @@ class ParentLocationCache(dict):
             del self[key]
 
 
-class MongoModuleStore(
-        ModuleStoreDraftAndPublished, ModuleStoreWriteBase, MongoBulkOpsMixin,
-        ModuleStoreCoursewareIndexMixin
-    ):  # noqa
+class MongoModuleStore(ModuleStoreDraftAndPublished, ModuleStoreWriteBase, MongoBulkOpsMixin):
     """
     A Mongodb backed ModuleStore
     """
