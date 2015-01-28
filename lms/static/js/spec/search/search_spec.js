@@ -36,13 +36,6 @@ define([
             this.form.on('search', this.onSearch);
         });
 
-        it('prevents default action on submit', function () {
-            var submitEvent = new Event('submit');
-            spyOn(submitEvent, 'preventDefault');
-            this.form.submitForm(submitEvent);
-            expect(submitEvent.preventDefault).toHaveBeenCalled();
-        });
-
         it('trims input string', function () {
             var term = '  search string  ';
             $('.search-field').val(term);
@@ -112,14 +105,14 @@ define([
             expect(this.item.$el).toHaveAttr('aria-label', 'search result');
         });
 
-        it('renders underscore template', function () {
+        it('renders correctly', function () {
             var href = this.model.attributes.url;
             var breadcrumbs = 'section ▸ subsection ▸ unit';
 
             this.item.render();
             expect(this.item.$el).toContainHtml(this.model.attributes.content_type);
             expect(this.item.$el).toContainHtml(this.model.attributes.excerpt);
-            expect(this.item.$el.find('a[href="'+href+'"]')).toHaveAttr('href', href);
+            expect(this.item.$el).toContain('a[href="'+href+'"]');
             expect(this.item.$el).toContainHtml(breadcrumbs);
         });
 
@@ -416,72 +409,103 @@ define([
     describe('SearchApp', function () {
 
         beforeEach(function () {
+            loadFixtures('js/fixtures/search_form.html');
+            appendSetFixtures(
+                '<section id="courseware-search-results" data-course-name="Test Course"></section>' +
+                '<section id="course-content"></section>'
+            );
             TemplateHelpers.installTemplates([
                 'templates/courseware_search/search_item',
                 'templates/courseware_search/search_list',
                 'templates/courseware_search/search_loading',
                 'templates/courseware_search/search_error'
-            ], true);
+            ]);
 
-            // spy on these methods before they are bound to events
-            spyOn(SearchRouter.prototype, 'navigate').andCallThrough();
-            spyOn(SearchForm.prototype, 'doSearch').andCallThrough();
-            spyOn(SearchCollection.prototype, 'performSearch').andCallThrough();
-            spyOn(SearchCollection.prototype, 'cancelSearch').andCallThrough();
-            spyOn(SearchCollection.prototype, 'loadNextPage').andCallThrough();
-            spyOn(SearchListView.prototype, 'showLoadingMessage').andCallThrough();
-            spyOn(SearchListView.prototype, 'clear').andCallThrough();
+            this.server = Sinon.fakeServer.create();
+            this.server.respondWith([200, {}, JSON.stringify({
+                total: 1337,
+                access_denied_count: 12,
+                results: [{
+                    data: {
+                        location: ['section', 'subsection', 'unit'],
+                        url: '/some/url/to/content',
+                        content_type: 'text',
+                        excerpt: 'this is a short excerpt'
+                    }
+                }]
+            })]);
 
+            Backbone.history.stop();
             this.app = new SearchApp('a/b/c');
 
+            // start history after the application has finished creating
+            //  all of its routers
+            Backbone.history.start();
         });
 
-        it ('has all necessary components', function () {
-            expect(this.app).toBeDefined();
-            expect(this.app.router).toBeDefined();
-            expect(this.app.form).toBeDefined();
-            expect(this.app.collection).toBeDefined();
-            expect(this.app.results).toBeDefined();
+        afterEach(function () {
+            this.server.restore();
         });
 
         it ('shows loading message on search', function () {
-            this.app.form.trigger('search');
-            expect(this.app.results.showLoadingMessage).toHaveBeenCalled();
+            $('.search-field').val('search string');
+            $('.search-button').trigger('click');
+            expect($('#course-content')).toBeHidden();
+            expect($('#courseware-search-results')).toBeVisible();
+            expect($('#courseware-search-results')).not.toBeEmpty();
         });
 
         it ('performs search', function () {
-            this.app.form.trigger('search');
-            expect(this.app.collection.performSearch).toHaveBeenCalled();
+            $('.search-field').val('search string');
+            $('.search-button').trigger('click');
+            this.server.respond();
+            expect($('.search-info')).toExist();
+            expect($('.search-results')).toBeVisible();
         });
 
         it ('updates navigation history on search', function () {
-            this.app.form.trigger('search', 'search_string');
-            expect(this.app.router.navigate).toHaveBeenCalledWith('search/search_string', { replace: true });
+            $('.search-field').val('edx');
+            $('.search-button').trigger('click');
+            expect(Backbone.history.fragment).toEqual('search/edx');
         });
 
-        it ('cancels search', function () {
-            this.app.form.trigger('clear');
-            expect(this.app.collection.cancelSearch).toHaveBeenCalled();
+        it ('aborts sent search request', function () {
+            // send search request to server
+            $('.search-field').val('search string');
+            $('.search-button').trigger('click');
+            // cancel search
+            $('.cancel-button').trigger('click');
+            this.server.respond();
+            // there should be no results
+            expect($('#course-content')).toBeVisible();
+            expect($('#courseware-search-results')).toBeHidden();
         });
 
         it ('clears results', function () {
-            this.app.form.trigger('clear');
-            expect(this.app.results.clear).toHaveBeenCalled();
+            $('.cancel-button').trigger('click');
+            expect($('#course-content')).toBeVisible();
+            expect($('#courseware-search-results')).toBeHidden();
         });
 
         it ('updates navigation history on clear', function () {
-            this.app.form.trigger('clear');
-            expect(this.app.router.navigate).toHaveBeenCalledWith(/* nothing */);
+            $('.cancel-button').trigger('click');
+            expect(Backbone.history.fragment).toEqual('');
         });
 
         it ('loads next page', function () {
-            this.app.results.trigger('next');
-            expect(this.app.collection.loadNextPage).toHaveBeenCalled();
+            $('.search-field').val('query');
+            $('.search-button').trigger('click');
+            this.server.respond();
+            expect($('.search-load-next')).toBeVisible();
+            $('.search-load-next').trigger('click');
+            var body = this.server.requests[1].requestBody;
+            expect(body).toContain('search_string=query');
+            expect(body).toContain('page_index=1');
         });
 
         it ('navigates to search', function () {
             Backbone.history.loadUrl('search/query');
-            expect(this.app.form.doSearch).toHaveBeenCalledWith('query');
+            expect(this.server.requests[0].requestBody).toContain('search_string=query');
         });
 
     });
