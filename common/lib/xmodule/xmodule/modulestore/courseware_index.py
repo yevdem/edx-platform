@@ -25,12 +25,13 @@ class SearchIndexingError(Exception):
         self.error_list = error_list
 
 
-class ModuleStoreCoursewareIndexMixin(object):
+class CoursewareSearchIndexer(object):
     """
-    Mixin class to enable indexing for courseware search from different modulestores
+    Class to perform indexing for courseware search from different modulestores
     """
 
-    def add_to_search_index(self, location, delete=False, raise_on_error=False):
+    @staticmethod
+    def add_to_search_index(modulestore, location, delete=False, raise_on_error=False):
         """
         Add to courseware search index from given location and its children
         """
@@ -53,9 +54,9 @@ class ModuleStoreCoursewareIndexMixin(object):
             """ Fetch the item from the modulestore location, log if not found, but continue """
             try:
                 if isinstance(item_location, CourseLocator):
-                    item = self.get_course(item_location)
+                    item = modulestore.get_course(item_location)
                 else:
-                    item = self.get_item(item_location, revision=ModuleStoreEnum.RevisionOption.published_only)
+                    item = modulestore.get_item(item_location, revision=ModuleStoreEnum.RevisionOption.published_only)
             except ItemNotFoundError:
                 log.warning('Cannot find: %s', item_location)
                 return None
@@ -126,8 +127,9 @@ class ModuleStoreCoursewareIndexMixin(object):
         if raise_on_error and error_list:
             raise SearchIndexingError(_('Error(s) present during indexing'), error_list)
 
-    def do_course_reindex(self, course_key):
+    @classmethod
+    def do_course_reindex(cls, modulestore, course_key):
         """
         (Re)index all content within the given course
         """
-        return self.add_to_search_index(course_key, delete=False, raise_on_error=True)
+        return cls.add_to_search_index(modulestore, course_key, delete=False, raise_on_error=True)

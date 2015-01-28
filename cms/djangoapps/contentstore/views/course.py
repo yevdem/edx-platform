@@ -22,7 +22,7 @@ from edxmako.shortcuts import render_to_response
 from xmodule.course_module import DEFAULT_START_DATE
 from xmodule.error_module import ErrorDescriptor
 from xmodule.modulestore.django import modulestore
-from xmodule.modulestore.courseware_index import SearchIndexingError
+from xmodule.modulestore.courseware_index import CoursewareSearchIndexer, SearchIndexingError
 from xmodule.contentstore.content import StaticContent
 from xmodule.tabs import PDFTextbookTabs
 from xmodule.partitions.partitions import UserPartition
@@ -129,7 +129,7 @@ def reindex_course_and_check_access(course_key, user):
     """
     if not has_course_author_access(user, course_key):
         raise PermissionDenied()
-    return modulestore().do_course_reindex(course_key)
+    return CoursewareSearchIndexer.do_course_reindex(modulestore(), course_key)
 
 
 @login_required
