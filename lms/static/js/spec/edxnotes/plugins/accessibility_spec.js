@@ -43,13 +43,19 @@ define([
         describe('destroy', function () {
             it('should unbind all events', function () {
                 spyOn($.fn, 'off');
-                spyOn(this.annotator, 'unsubscribe');
+                spyOn(this.annotator, 'unsubscribe').andCallThrough();
                 this.plugin.destroy();
                 expect($.fn.off).toHaveBeenCalledWith('keydown', '.annotator-hl');
                 expect($.fn.off).toHaveBeenCalledWith('keydown', '.annotator-viewer');
                 expect($.fn.off).toHaveBeenCalledWith('keydown', '.annotator-editor');
                 expect(this.annotator.unsubscribe).toHaveBeenCalledWith(
                     'annotationViewerTextField', this.plugin.addAriaAttributes
+                );
+                expect(this.annotator.unsubscribe).toHaveBeenCalledWith(
+                    'annotationsLoaded', this.plugin.addTabIndexHighlights
+                );
+                expect(this.annotator.unsubscribe).toHaveBeenCalledWith(
+                    'annotationCreated', this.plugin.addTabIndexHighlights
                 );
             });
         });
@@ -58,7 +64,7 @@ define([
             var highlight, annotation, note;
 
             beforeEach(function() {
-                highlight = $('<span class="annotator-hl" tabindex="0"/>').appendTo(this.annotator.element);
+                highlight = $('<span class="annotator-hl" />').appendTo(this.annotator.element);
                 annotation = {
                     id: '01',
                     text: "Test text",
@@ -82,7 +88,7 @@ define([
             var highlight, annotation, edit;
 
             beforeEach(function() {
-                highlight = $('<span class="annotator-hl" tabindex="0"/>').appendTo(this.annotator.element);
+                highlight = $('<span class="annotator-hl" />').appendTo(this.annotator.element);
                 annotation = {
                     id: '01',
                     text: "Test text",
@@ -120,9 +126,11 @@ define([
 
             beforeEach(function() {
                 html = [
-                    '<span class="annotator-hl" tabindex="0">',
+                    '<span class="annotator-hl note-focus-grabber" id="note-focus-grabber-01" tabindex="0">',
+                    '<span class="annotator-hl">',
                         'Outer highlight containing an ',
-                        '<span class="annotator-hl" tabindex="0">',
+                        '<span class="annotator-hl note-focus-grabber" id="note-focus-grabber-02" tabindex="0">',
+                        '<span class="annotator-hl">',
                             'inner highlight',
                         '</span>',
                         'in its text.',
@@ -130,6 +138,7 @@ define([
                 ].join('');
                 outerHighlight = $(html).appendTo(this.annotator.element);
                 innerHighlight = outerHighlight.children();
+
                 annotations = [
                     {
                         id: '01',
@@ -142,6 +151,15 @@ define([
                         highlights: [innerHighlight.get(0)]
                     }
                 ];
+
+                outerHighlight.data({
+                    'grabber-id': 'note-focus-grabber-01',
+                    'annotation': annotations[0]
+                });
+                innerHighlight.data({
+                    'grabber-id': 'note-focus-grabber-02',
+                    'annotation': annotations[1]
+                });
                 this.annotator.viewer.load(annotations);
                 edits[0] = this.annotator.element.find('.annotator-edit').first();
                 dels[0] = this.annotator.element.find('.annotator-delete').first();
@@ -178,11 +196,11 @@ define([
                 edits[0].focus();
                 edits[0].trigger(keyDownEvent(this.KEY.ESCAPE));
                 expect(this.annotator.viewer.hide).toHaveBeenCalled();
-                expect(outerHighlight).toBeFocused();
+                expect(outerHighlight).toHaveClass('is-focused');
                 dels[0].focus();
                 dels[0].trigger(keyDownEvent(this.KEY.ESCAPE));
                 expect(this.annotator.viewer.hide).toHaveBeenCalled();
-                expect(outerHighlight).toBeFocused();
+                expect(outerHighlight).toHaveClass('is-focused');
             });
         });
 
@@ -190,7 +208,7 @@ define([
             var highlight, annotation, textArea, save, cancel;
 
             beforeEach(function() {
-                highlight = $('<span class="annotator-hl" tabindex="0"/>').appendTo(this.annotator.element);
+                highlight = $('<span class="annotator-hl" />').appendTo(this.annotator.element);
                 annotation = {
                     id: '01',
                     text: "Test text",

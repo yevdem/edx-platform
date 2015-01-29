@@ -5,7 +5,7 @@ define([
      'js/edxnotes/views/shim', 'js/edxnotes/plugins/scroller',
      'js/edxnotes/plugins/events', 'js/edxnotes/plugins/accessibility'
 ], function ($, _, Annotator, NotesLogger) {
-    var plugins = ['Auth', 'Store', 'Scroller', 'Events', 'Accessibility'],
+    var plugins = ['Auth', 'Store', 'Accessibility', 'Scroller', 'Events'],
         getOptions, setupPlugins, updateHeaders, getAnnotator;
 
     /**

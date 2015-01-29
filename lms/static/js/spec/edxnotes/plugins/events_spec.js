@@ -56,7 +56,8 @@ define([
                     user: 'user-123',
                     text: 'text-123',
                     quote: 'quote-123',
-                    usage_id: 'usage-123'
+                    usage_id: 'usage-123',
+                    highlights: []
                 };
 
             this.annotator.publish('annotationCreated', newNote);

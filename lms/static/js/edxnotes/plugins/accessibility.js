@@ -29,8 +29,8 @@ define(['jquery', 'underscore', 'annotator'], function ($, _, Annotator) {
 
     $.extend(Annotator.Plugin.Accessibility.prototype, new Annotator.Plugin(), {
         events: {
-            '.annotator-hl focus': 'onGrabberFocus',
-            '.annotator-hl blur': 'onGrabberBlur'
+            '.annotator-hl.note-focus-grabber focus': 'onGrabberFocus',
+            '.annotator-hl.note-focus-grabber blur': 'onGrabberBlur'
         },
 
         pluginInit: function () {
@@ -66,7 +66,7 @@ define(['jquery', 'underscore', 'annotator'], function ($, _, Annotator) {
             _.each(annotations, function (annotation) {
                 var id = annotation.id || _.uniqueId(),
                     grabber = $('<span />', {
-                        'class': 'annotator-hl',
+                        'class': 'annotator-hl note-focus-grabber',
                         'id': 'note-focus-grabber-' + id,
                         'tabindex': 0,
                         'aria-labelledby': 'note-label-' + id
@@ -102,13 +102,20 @@ define(['jquery', 'underscore', 'annotator'], function ($, _, Annotator) {
         },
 
         focusOnHighlightedText: function (event) {
-            var viewer, viewerControls, note, id;
+            var id, grabberId, grabber;
 
-            viewer = this.annotator.element.find('.annotator-viewer');
-            viewerControls = viewer.find('.annotator-controls');
-            note = viewerControls.siblings('div[role="note"]');
-            id = note.attr('id');
-            $('.annotator-hl[aria-describedby=' + id + ']').focus();
+            id = this.annotator.element
+                    .find('.annotator-viewer')
+                    .find('div[role="note"]')
+                    .attr('id');
+
+            grabberId = $('.annotator-hl[aria-describedby=' + id + ']').data('grabber-id');
+            grabber = $('#' + grabberId).get(0);
+
+            if (grabber) {
+                grabber.focus();
+            }
+
             event.preventDefault();
         },
 

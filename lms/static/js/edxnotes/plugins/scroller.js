@@ -58,7 +58,12 @@ define(['jquery', 'underscore', 'annotator'], function ($, _, Annotator) {
         },
 
         scrollIntoView: function (highlight) {
-            highlight.focus();
+            var grabberId = $(highlight).data('grabber-id'),
+                grabber = $('#' + grabberId).get(0);
+
+            if (grabber) {
+                grabber.focus();
+            }
         }
     });
 });

@@ -31,14 +31,22 @@ define([
             ];
 
             highlights = _.map(annotators, function(annotator) {
+                var hightlight = $('<span />', {
+                        'class': 'annotator-hl',
+                        'text': 'some content'
+                    }).data('grabber-id', 'note-focus-grabber-0'),
+                    grabber = $('<span />', {
+                        'class': 'annotator-hl note-focus-grabber',
+                        'id': 'note-focus-grabber-0',
+                        'tabindex': 0,
+                    }).data('annotation', {highlights: [hightlight.get(0)]});
+
                 spyOn(annotator, 'onHighlightClick').andCallThrough();
                 spyOn(annotator, 'onHighlightMouseover').andCallThrough();
                 spyOn(annotator, 'startViewerHideTimer').andCallThrough();
-                return $('<span></span>', {
-                    'class': 'annotator-hl',
-                    'tabindex': -1,
-                    'text': 'some content'
-                }).appendTo(annotator.element);
+
+                grabber.appendTo(annotator.element);
+                return hightlight.appendTo(annotator.element);
             });
 
             spyOn(annotators[0].plugins.Scroller, 'getIdFromLocationHash').andReturn('abc123');
@@ -55,7 +63,7 @@ define([
                 highlights: [highlights[0]]
             }]);
             annotators[0].onHighlightMouseover.reset();
-            expect(highlights[0]).toBeFocused();
+            expect(highlights[0]).toHaveClass('is-focused');
             highlights[0].mouseover();
             highlights[0].mouseout();
             checkAnnotatorIsFrozen(annotators[0]);
@@ -66,7 +74,7 @@ define([
                 id: 'def456',
                 highlights: [highlights[0]]
             }]);
-            expect(highlights[0]).not.toBeFocused();
+            expect(highlights[0]).not.toHaveClass('is-focused');
             highlights[0].mouseover();
             highlights[0].mouseout();
             checkAnnotatorIsUnfrozen(annotators[0]);
@@ -77,7 +85,7 @@ define([
                 id: '',
                 highlights: [highlights[0]]
             }]);
-            expect(highlights[0]).not.toBeFocused();
+            expect(highlights[0]).not.toHaveClass('is-focused');
             highlights[0].mouseover();
             highlights[0].mouseout();
             checkAnnotatorIsUnfrozen(annotators[0]);
