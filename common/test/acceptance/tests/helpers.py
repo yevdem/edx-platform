@@ -13,6 +13,8 @@ from opaque_keys.edx.locator import CourseLocator
 from xmodule.partitions.partitions import UserPartition
 from xmodule.partitions.tests.test_partitions import MockUserPartitionScheme
 from selenium.webdriver.support.select import Select
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 
 def skip_if_browser(browser):
@@ -232,6 +234,15 @@ def element_has_text(page, css_selector, text):
         text_present = True
 
     return text_present
+
+
+def get_modal_alert(browser):
+    """
+    Returns instance of modal alert box shown in browser after waiting
+    for 4 seconds
+    """
+    WebDriverWait(browser, 4).until(EC.alert_is_present())
+    return browser.switch_to.alert
 
 
 class UniqueCourseTest(WebAppTest):
