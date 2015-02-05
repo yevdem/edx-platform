@@ -65,62 +65,6 @@ def instantiate_descriptor(**field_data):
     )
 
 
-def set_up():
-    """
-    Overrides YOUTUBE and CONTENTSTORE settings
-    """
-    youtube_setting = getattr(settings, "YOUTUBE", None)
-    contentstore_setting = getattr(settings, "CONTENTSTORE", None)
-    settings.YOUTUBE = {
-        # YouTube JavaScript API
-        'API': 'www.youtube.com/iframe_api',
-
-        # URL to test YouTube availability
-        'TEST_URL': 'gdata.youtube.com/feeds/api/videos/',
-
-        # Current youtube api for requesting transcripts.
-        # For example: http://video.google.com/timedtext?lang=en&v=j_jEn79vS3g.
-        'TEXT_API': {
-            'url': 'video.google.com/timedtext',
-            'params': {
-                'lang': 'en',
-                'v': 'set_youtube_id_of_11_symbols_here',
-            },
-        },
-    }
-
-    settings.CONTENTSTORE = {
-        'ENGINE': 'xmodule.contentstore.mongo.MongoContentStore',
-        'DOC_STORE_CONFIG': {
-            'host': 'localhost',
-            'db': 'test_xcontent_%s' % uuid4().hex,
-        },
-        # allow for additional options that can be keyed on a name, e.g. 'trashcan'
-        'ADDITIONAL_OPTIONS': {
-            'trashcan': {
-                'bucket': 'trash_fs'
-            }
-        }
-    }
-
-    return youtube_setting, contentstore_setting
-
-
-def tear_down(youtube_setting, contentstore_setting):
-    """
-    Returns YOUTUBE and CONTENTSTORE settings to a default value
-    """
-    if youtube_setting:
-        settings.YOUTUBE = youtube_setting
-    else:
-        del settings.YOUTUBE
-
-    if contentstore_setting:
-        settings.CONTENTSTORE = contentstore_setting
-    else:
-        del settings.CONTENTSTORE
-
-
 class VideoModuleTest(LogicTest):
     """Logic tests for Video Xmodule."""
     descriptor_class = VideoDescriptor
@@ -152,6 +96,7 @@ class VideoModuleTest(LogicTest):
 
     def test_parse_youtube_invalid(self):
         """Ensure that ids that are invalid return an empty dict"""
+
         # invalid id
         youtube_str = 'thisisaninvalidid'
         output = VideoDescriptor._parse_youtube(youtube_str)
@@ -204,6 +149,7 @@ class VideoDescriptorTestBase(unittest.TestCase):
     """
     Base class for tests for VideoDescriptor
     """
+
     def setUp(self):
         super(VideoDescriptorTestBase, self).setUp()
         self.descriptor = instantiate_descriptor()
@@ -213,6 +159,7 @@ class TestCreateYoutubeString(VideoDescriptorTestBase):
     """
     Checks that create_youtube_string correcty extracts information from Video descriptor.
     """
+
     def test_create_youtube_string(self):
         """
         Test that Youtube ID strings are correctly created when writing back out to XML.
@@ -239,6 +186,7 @@ class VideoDescriptorImportTestCase(unittest.TestCase):
     """
     Make sure that VideoDescriptor can import an old XML-based video correctly.
     """
+
     def assert_attributes_equal(self, video, attrs):
         """
         Assert that `video` has the correct attributes. `attrs` is a map of {metadata_field: value}.
@@ -559,6 +507,7 @@ class VideoExportTestCase(VideoDescriptorTestBase):
     """
     Make sure that VideoDescriptor can export itself to XML correctly.
     """
+
     def assertXmlEqual(self, expected, xml):
         for attr in ['tag', 'attrib', 'text', 'tail']:
             self.assertEqual(getattr(expected, attr), getattr(xml, attr))
@@ -670,8 +619,65 @@ class VideoDescriptorIndexingTestCase(unittest.TestCase):
     """
     Make sure that VideoDescriptor can format data for indexing as expected.
     """
+    TEST_YOU_TUBE_SETTINGS = {
+        # YouTube JavaScript API
+        'API': 'www.youtube.com/iframe_api',
+
+        # URL to test YouTube availability
+        'TEST_URL': 'gdata.youtube.com/feeds/api/videos/',
+
+        # Current youtube api for requesting transcripts.
+        # For example: http://video.google.com/timedtext?lang=en&v=j_jEn79vS3g.
+        'TEXT_API': {
+            'url': 'video.google.com/timedtext',
+            'params': {
+                'lang': 'en',
+                'v': 'set_youtube_id_of_11_symbols_here',
+            },
+        },
+    }
+
+    TEST_DATA_CONTENTSTORE = {
+        'ENGINE': 'xmodule.contentstore.mongo.MongoContentStore',
+        'DOC_STORE_CONFIG': {
+            'host': 'localhost',
+            'db': 'test_xcontent_%s' % uuid4().hex,
+        },
+        # allow for additional options that can be keyed on a name, e.g. 'trashcan'
+        'ADDITIONAL_OPTIONS': {
+            'trashcan': {
+                'bucket': 'trash_fs'
+            }
+        }
+    }
+
+    def __init__(self, *args, **kwargs):
+        super(VideoDescriptorIndexingTestCase, self).__init__(*args, **kwargs)
+        self.original_youtube_setting = getattr(settings, "YOUTUBE", None)
+        self.original_contentstore_setting = getattr(settings, "CONTENTSTORE", None)
+
+    def setUp(self):
+        """
+        Overrides YOUTUBE and CONTENTSTORE settings
+        """
+        settings.YOUTUBE = self.TEST_YOU_TUBE_SETTINGS
+        settings.CONTENTSTORE = self.TEST_DATA_CONTENTSTORE
+
+    def tearDown(self):
+        """
+        Returns YOUTUBE and CONTENTSTORE settings to a default value
+        """
+        if self.original_youtube_setting:
+            settings.YOUTUBE = self.original_youtube_setting
+        else:
+            del settings.YOUTUBE
+
+        if self.original_contentstore_setting:
+            settings.CONTENTSTORE = self.original_contentstore_setting
+        else:
+            del settings.CONTENTSTORE
+
     def test_index_dictionary(self):
-        youtube_setting, contentstore_setting = set_up()
         xml_data = '''
             <video display_name="Test Video"
                    youtube="1.0:p2Q6BrNhdh8,0.75:izygArpw-Qo,1.25:1EeWXzPdhSA,1.5:rABDYkeK0x8"
@@ -814,5 +820,3 @@ class VideoDescriptorIndexingTestCase(unittest.TestCase):
             },
             "content_type": "Video"
         })
-
-        tear_down(youtube_setting, contentstore_setting)
