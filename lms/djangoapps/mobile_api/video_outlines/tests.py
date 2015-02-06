@@ -580,7 +580,7 @@ class TestTranscriptsDetail(TestVideoAPITestCase, MobileAuthTestMixin, MobileEnr
         self.login_and_enroll()
         self.api_response(expected_response_code=404, lang='pl')
 
-    def test_transscript_with_unicode_file_name(self):
+    def test_transcript_with_unicode_file_name(self):
         self.video = self._create_video_with_subs(custom_subid=u'你好')
         self.login_and_enroll()
         self.api_response(expected_response_code=200, lang='en')
