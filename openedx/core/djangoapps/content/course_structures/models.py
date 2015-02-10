@@ -52,7 +52,7 @@ def generate_course_structure(course_key):
 
 @receiver(SignalHandler.course_published)
 def listen_for_course_publish(sender, course_key, **kwargs):
-    update_course_structure(course_key)
+    update_course_structure.delay(course_key)
 
 
 @task()
