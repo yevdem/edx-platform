@@ -356,9 +356,9 @@ class VideoPage(PageObject):
 
         self.q(css=button_selector).first.click()
 
-        # button_states = {'play': 'playing', 'pause': 'pause'}
-        # if button in button_states:
-        #     self.wait_for_state(button_states[button])
+        button_states = {'play': 'playing', 'pause': 'pause'}
+        if button in button_states:
+            self.wait_for_state(button_states[button])
 
         self.wait_for_ajax()
 
@@ -662,12 +662,10 @@ class VideoPage(PageObject):
         """
         state_selector = self.get_element_selector(CSS_CLASS_NAMES['video_container'])
         current_state = self.q(css=state_selector).attrs('class')[0]
-        selector = self.get_element_selector(CSS_CLASS_NAMES['video_time'])
-        time = self.q(css=selector).text[0]
 
         # For troubleshooting purposes show what the current state is.
         # The debug statements will only be displayed in the event of a failure.
-        logging.debug("Current state of '{}' element is '{}', time is {}".format(state_selector, current_state, time))
+        logging.debug("Current state of '{}' element is '{}'".format(state_selector, current_state))
 
         # See the JS video player's onStateChange function
         if 'is-playing' in current_state:
@@ -679,7 +677,7 @@ class VideoPage(PageObject):
         elif 'is-ended' in current_state:
             return 'finished'
 
-    def _wait_for(self, check_func, desc, result=False, timeout=30):
+    def _wait_for(self, check_func, desc, result=False, timeout=200):
         """
         Calls the method provided as an argument until the Promise satisfied or BrokenPromise
 
@@ -691,9 +689,9 @@ class VideoPage(PageObject):
 
         """
         if result:
-            return Promise(check_func, desc, timeout=timeout, try_interval=0.2).fulfill()
+            return Promise(check_func, desc, timeout=timeout).fulfill()
         else:
-            return EmptyPromise(check_func, desc, timeout=timeout, try_interval=0.2).fulfill()
+            return EmptyPromise(check_func, desc, timeout=timeout).fulfill()
 
     def wait_for_state(self, state):
         """
