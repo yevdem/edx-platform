@@ -68,7 +68,7 @@ class SignalHandler(object):
     2. The sender is going to be the class of the modulestore sending it.
     3. Always have **kwargs in your signal handler, as new things may be added.
     4. The thing that listens for the signal lives in process, but should do
-       almost no work. It's main job is to kick off the celery task that will
+       almost no work. Its main job is to kick off the celery task that will
        do the actual work.
 
     """
