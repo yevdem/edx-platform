@@ -233,8 +233,13 @@ class SplitBulkWriteMixin(BulkOperationsMixin):
         """
         End the active bulk write operation on course_key.
         """
+
+        dirty = False
+
         # If the content is dirty, then update the database
         for _id in bulk_write_record.structures.viewkeys() - bulk_write_record.structures_in_db:
+            dirty = True
+
             try:
                 self.db_connection.insert_structure(bulk_write_record.structures[_id])
             except DuplicateKeyError:
@@ -244,6 +249,8 @@ class SplitBulkWriteMixin(BulkOperationsMixin):
                 log.debug("Attempted to insert duplicate structure %s", _id)
 
         for _id in bulk_write_record.definitions.viewkeys() - bulk_write_record.definitions_in_db:
+            dirty = True
+
             try:
                 self.db_connection.insert_definition(bulk_write_record.definitions[_id])
             except DuplicateKeyError:
@@ -253,10 +260,15 @@ class SplitBulkWriteMixin(BulkOperationsMixin):
                 log.debug("Attempted to insert duplicate definition %s", _id)
 
         if bulk_write_record.index is not None and bulk_write_record.index != bulk_write_record.initial_index:
+            dirty = True
+
             if bulk_write_record.initial_index is None:
                 self.db_connection.insert_course_index(bulk_write_record.index)
             else:
                 self.db_connection.update_course_index(bulk_write_record.index, from_index=bulk_write_record.initial_index)
+
+        if dirty and self.signal_handler:
+            self.signal_handler.send("course_published", course_key=course_key)
 
     def get_course_index(self, course_key, ignore_case=False):
         """
