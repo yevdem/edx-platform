@@ -298,8 +298,6 @@ class SingleThreadQueryCountTestCase(ModuleStoreTestCase):
     Ensures the number of modulestore queries is deterministic based on the
     number of responses retrieved for a given discussion thread.
     """
-    MODULESTORE = TEST_DATA_MONGO_MODULESTORE
-
     @ddt.data(
         # old mongo: number of responses plus 16.  TODO: O(n)!
         (ModuleStoreEnum.Type.mongo, 50, 67),
@@ -314,29 +312,29 @@ class SingleThreadQueryCountTestCase(ModuleStoreTestCase):
         with modulestore().default_store(default_store):
             course = CourseFactory.create(discussion_topics={'dummy discussion': {'id': 'dummy_discussion_id'}})
 
-        student = UserFactory.create()
-        CourseEnrollmentFactory.create(user=student, course_id=course.id)
+            student = UserFactory.create()
+            CourseEnrollmentFactory.create(user=student, course_id=course.id)
 
-        test_thread_id = "test_thread_id"
-        mock_request.side_effect = make_mock_request_impl(
-            "dummy content",
-            test_thread_id,
-            num_thread_responses=num_thread_responses,
-        )
-        request = RequestFactory().get(
-            "dummy_url",
-            HTTP_X_REQUESTED_WITH="XMLHttpRequest"
-        )
-        request.user = student
-        with check_mongo_calls(num_mongo_calls):
-            response = views.single_thread(
-                request,
-                course.id.to_deprecated_string(),
-                "dummy_discussion_id",
-                test_thread_id
+            test_thread_id = "test_thread_id"
+            mock_request.side_effect = make_mock_request_impl(
+                "dummy content",
+                test_thread_id,
+                num_thread_responses=num_thread_responses,
             )
-            self.assertEquals(response.status_code, 200)
-            self.assertEquals(len(json.loads(response.content)["content"]["children"]), num_thread_responses)
+            request = RequestFactory().get(
+                "dummy_url",
+                HTTP_X_REQUESTED_WITH="XMLHttpRequest"
+            )
+            request.user = student
+            with check_mongo_calls(num_mongo_calls):
+                response = views.single_thread(
+                    request,
+                    course.id.to_deprecated_string(),
+                    "dummy_discussion_id",
+                    test_thread_id
+                )
+                self.assertEquals(response.status_code, 200)
+                self.assertEquals(len(json.loads(response.content)["content"]["children"]), num_thread_responses)
 
 
 @patch('requests.request')
