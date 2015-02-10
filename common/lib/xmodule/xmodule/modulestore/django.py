@@ -56,7 +56,7 @@ class SignalHandler(object):
 
         @receiver(SignalHandler.course_published)
         def listen_for_course_publish(sender, course_key, **kwargs):
-            do_my_expensive_update(course_key)
+            do_my_expensive_update.delay(course_key)
 
         @task()
         def do_my_expensive_update(course_key):

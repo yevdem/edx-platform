@@ -15,7 +15,7 @@ class Migration(SchemaMigration):
             ('modified', self.gf('model_utils.fields.AutoLastModifiedField')(default=datetime.datetime.now)),
             ('course_id', self.gf('xmodule_django.models.CourseKeyField')(max_length=255, db_index=True)),
             ('version', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
-            ('structure_json', self.gf('django.db.models.fields.TextField')()),
+            ('structure_json', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
         ))
         db.send_create_signal('course_structures', ['CourseStructure'])
 
@@ -38,7 +38,7 @@ class Migration(SchemaMigration):
             'created': ('model_utils.fields.AutoCreatedField', [], {'default': 'datetime.datetime.now'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'modified': ('model_utils.fields.AutoLastModifiedField', [], {'default': 'datetime.datetime.now'}),
-            'structure_json': ('django.db.models.fields.TextField', [], {}),
+            'structure_json': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'version': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'})
         }
     }

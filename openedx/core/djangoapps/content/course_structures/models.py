@@ -4,9 +4,9 @@ from celery.task import task
 from django.db import models
 from django.dispatch import receiver
 from model_utils.models import TimeStampedModel
-
 from xmodule.modulestore.django import modulestore, SignalHandler
 
+from util.models import CompressedTextField
 from xmodule_django.models import CourseKeyField
 
 
@@ -19,7 +19,7 @@ class CourseStructure(TimeStampedModel):
     # we can do so and build a migration. The only problem with a normalized
     # data model for this is that it will likely involve hundreds of rows, and
     # we'd have to be careful about caching.
-    structure_json = models.TextField(verbose_name='Structure JSON')
+    structure_json = CompressedTextField(verbose_name='Structure JSON', blank=True, null=True)
 
     class Meta:
         unique_together = ('course_id', 'version')
