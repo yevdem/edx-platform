@@ -327,6 +327,7 @@ class SingleThreadQueryCountTestCase(ModuleStoreTestCase):
             )
             request.user = student
             with check_mongo_calls(num_mongo_calls):
+                mako_middleware_process_request(request)
                 response = views.single_thread(
                     request,
                     course.id.to_deprecated_string(),
