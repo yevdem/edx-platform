@@ -82,6 +82,9 @@ class SignalHandler(object):
         self.modulestore_class = modulestore_class
 
     def send(self, signal_name, **kwargs):
+        """
+        Send the signal to the receivers.
+        """
         signal = self._mapping[signal_name]
         signal.send_robust(sender=self.modulestore_class, **kwargs)
 
