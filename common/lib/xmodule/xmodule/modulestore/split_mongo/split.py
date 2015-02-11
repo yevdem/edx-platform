@@ -267,9 +267,6 @@ class SplitBulkWriteMixin(BulkOperationsMixin):
             else:
                 self.db_connection.update_course_index(bulk_write_record.index, from_index=bulk_write_record.initial_index)
 
-        if dirty and self.signal_handler:
-            self.signal_handler.send("course_published", course_key=course_key)
-
     def get_course_index(self, course_key, ignore_case=False):
         """
         Return the index for course_key.
