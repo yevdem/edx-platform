@@ -455,8 +455,6 @@ class MongoBulkOpsMixin(BulkOperationsMixin):
         """
         if bulk_ops_record.dirty:
             self.refresh_cached_metadata_inheritance_tree(course_id)
-            if self.signal_handler:
-                self.signal_handler.send("course_published", course_key=course_id)
             bulk_ops_record.dirty = False  # brand spanking clean now
 
     def _is_in_bulk_operation(self, course_id, ignore_case=False):
@@ -1121,15 +1119,14 @@ class MongoModuleStore(ModuleStoreDraftAndPublished, ModuleStoreWriteBase, Mongo
         if courses.count() > 0:
             raise DuplicateCourseError(course_id, courses[0]['_id'])
 
-        with self.bulk_operations(course_id):
-            xblock = self.create_item(user_id, course_id, 'course', course_id.run, fields=fields, **kwargs)
+        xblock = self.create_item(user_id, course_id, 'course', course_id.run, fields=fields, **kwargs)
 
-            # create any other necessary things as a side effect
-            super(MongoModuleStore, self).create_course(
-                org, course, run, user_id, runtime=xblock.runtime, **kwargs
-            )
+        # create any other necessary things as a side effect
+        super(MongoModuleStore, self).create_course(
+            org, course, run, user_id, runtime=xblock.runtime, **kwargs
+        )
 
-            return xblock
+        return xblock
 
     def create_xblock(
         self, runtime, course_key, block_type, block_id=None, fields=None,
@@ -1273,21 +1270,19 @@ class MongoModuleStore(ModuleStoreDraftAndPublished, ModuleStoreWriteBase, Mongo
         Set update on the specified item, and raises ItemNotFoundError
         if the location doesn't exist
         """
-        course_key = location.course_key
-        with self.bulk_operations(course_key):
-            bulk_record = self._get_bulk_ops_record(course_key)
-            bulk_record.dirty = True
-            # See http://www.mongodb.org/display/DOCS/Updating for
-            # atomic update syntax
-            result = self.collection.update(
-                {'_id': location.to_deprecated_son()},
-                {'$set': update},
-                multi=False,
-                upsert=allow_not_found,
-                w=1,  # wait until primary commits
-            )
-            if result['n'] == 0:
-                raise ItemNotFoundError(location)
+        bulk_record = self._get_bulk_ops_record(location.course_key)
+        bulk_record.dirty = True
+        # See http://www.mongodb.org/display/DOCS/Updating for
+        # atomic update syntax
+        result = self.collection.update(
+            {'_id': location.to_deprecated_son()},
+            {'$set': update},
+            multi=False,
+            upsert=allow_not_found,
+            w=1,  # wait until primary commits
+        )
+        if result['n'] == 0:
+            raise ItemNotFoundError(location)
 
     def _update_ancestors(self, location, update):
         """

@@ -34,7 +34,7 @@ from opaque_keys.edx.locations import SlashSeparatedCourseKey
 from opaque_keys.edx.locator import BlockUsageLocator, CourseLocator, LibraryLocator
 from xmodule.exceptions import InvalidVersionError
 from xmodule.modulestore import ModuleStoreEnum
-from xmodule.modulestore.draft_and_published import UnsupportedRevisionError
+from xmodule.modulestore.draft_and_published import UnsupportedRevisionError, DIRECT_ONLY_CATEGORIES
 from xmodule.modulestore.exceptions import ItemNotFoundError, DuplicateCourseError, ReferentialIntegrityError, NoPathToItem
 from xmodule.modulestore.mixed import MixedModuleStore
 from xmodule.modulestore.search import path_to_location
@@ -2113,13 +2113,31 @@ class TestMixedModuleStore(CourseComparisonTest):
                 with mock_signal_receiver(SignalHandler.course_published) as receiver:
                     self.assertEqual(receiver.call_count, 0)
                     course = self.store.create_course('org_x', 'course_y', 'run_z', self.user_id)
-                    self.assertEqual(receiver.call_count, 1)
+                    self.store.publish(course.location, self.user_id)
+                    self.assertEqual(receiver.call_count, 1 if default == ModuleStoreEnum.Type.mongo else 2)
 
                     course_key = course.id
-                    receiver.reset_mock()
-                    self.store.create_item(self.user_id, course_key, 'problem')
-                    self.assertEqual(receiver.call_count, 1)
+                    block_types = DIRECT_ONLY_CATEGORIES + ['problem']
+                    # block_types.remove('course')
+
+                    for block_type in block_types:
+                        print 'Testing with block type {}'.format(block_type)
+                        receiver.reset_mock()
+                        block = self.store.create_item(self.user_id, course_key, block_type)
+                        self.store.publish(block.location, self.user_id)
+                        self.assertEqual(receiver.call_count, 1)
+
+                        block.display_name = block_type
+                        self.store.update_item(block, self.user_id)
+                        self.store.publish(block.location, self.user_id)
+                        self.assertEqual(receiver.call_count, 2)
 
                     receiver.reset_mock()
-                    self.store.publish(course.location, self.user_id)
-                    self.assertEqual(receiver.call_count, 1)
+                    dest_course_key = self.store.make_course_key('a', 'course', 'course')
+                    import_from_xml(
+                        self.store, self.user_id, DATA_DIR, ['toy'], load_error_modules=False,
+                        static_content_store=contentstore,
+                        target_course_id=dest_course_key,
+                        create_course_if_not_present=True,
+                    )
+                    self.assertEqual(receiver.call_count, 2)
